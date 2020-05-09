@@ -15,3 +15,6 @@ end
 
 test 1, "1"
 test 12, "12"
+test 1, " 1"
+test 1, "1 "
+test 1, " 1 "

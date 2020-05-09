@@ -8,6 +8,7 @@ class MyJSON
   end
 
   class Lexer
+    WHITESPACES = [" ", "\n", "\r", "\t"].freeze
     DIGITS = ("0".."9").to_a.freeze
 
     def initialize(json)
@@ -21,6 +22,8 @@ class MyJSON
 
       until eos?
         case
+        when skip_whitespace
+          next
         when digit?(current)
           tokens << read_number
           next
@@ -48,6 +51,19 @@ class MyJSON
 
     def peek
       @json[@pos+1]
+    end
+
+    def whitespace?(c)
+      WHITESPACES.include?(c)
+    end
+
+    def skip_whitespace
+      skipped = false
+      while whitespace?(current)
+        skipped = true
+        advance
+      end
+      skipped
     end
 
     def digit?(c)
