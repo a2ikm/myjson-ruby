@@ -11,3 +11,4 @@ def test(expected, source)
 end
 
 test 1, "1"
+test 12, "12"
