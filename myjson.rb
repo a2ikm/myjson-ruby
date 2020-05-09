@@ -1,4 +1,7 @@
 class MyJSON
+  Error = Class.new(StandardError)
+  UnexpectedCharacter = Class.new(Error)
+
   def self.parse(json)
     tokens = Lexer.new(json).lex
     Parser.new(tokens).parse
