@@ -20,6 +20,7 @@ class MyJSON
   class Lexer
     WHITESPACES = [" ", "\n", "\r", "\t"].freeze
     DIGITS = ("0".."9").to_a.freeze
+    SYMBOLS = ["[", "]"].freeze
 
     def initialize(json)
       @json = json
@@ -33,6 +34,9 @@ class MyJSON
       until eos?
         case
         when skip_whitespace
+          next
+        when symbol?(current)
+          tokens << Token.new(:symbol, read_symbol)
           next
         when current == '"'
           tokens << Token.new(:string, read_string)
@@ -80,6 +84,16 @@ class MyJSON
         advance
       end
       skipped
+    end
+
+    def symbol?(c)
+      SYMBOLS.include?(c)
+    end
+
+    def read_symbol
+      c = current
+      advance
+      c
     end
 
     def digit?(c)
@@ -175,8 +189,27 @@ class MyJSON
       end
     end
 
+    def consume_symbol(symbol)
+      if (token = consume_type(:symbol)) && token.string == symbol
+        token
+      end
+    end
+
     def value
-      number || string || keyword
+      array || number || string || keyword
+    end
+
+    def array
+      return nil unless token = consume_symbol("[")
+
+      array = []
+      loop do
+        if consume_symbol("]")
+          break
+        end
+      end
+
+      array
     end
 
     def number
