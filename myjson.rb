@@ -31,6 +31,16 @@ class MyJSON
     WHITESPACES = [" ", "\n", "\r", "\t"].freeze
     DIGITS = ("0".."9").to_a.freeze
     SYMBOLS = ["[", "]", "{", "}", ",", ":"].freeze
+    ESCAPE_MAP = {
+      '"'   => '"',
+      '\\'  => '\\',
+      '/'   => "\/",
+      'b'   => "\b",
+      'f'   => "\f",
+      'n'   => "\n",
+      'r'   => "\r",
+      't'   => "\t",
+    }.freeze
 
     def initialize(json)
       @json = json
@@ -58,7 +68,7 @@ class MyJSON
           tokens << Token.new(:keyword, read_keyword)
           next
         else
-          raise UnexpectedCharacter
+          raise UnexpectedCharacter, "unexpected character #{current.inspect}"
         end
       end
 
@@ -140,22 +150,27 @@ class MyJSON
 
     def read_string
       advance
-      start = @pos
+
+      string = String.new
 
       loop do
         if current == '"'
+          advance
           break
-        elsif current == '\\' && peek == '"'
+        elsif current == '\\'
+          if ESCAPE_MAP.key?(peek)
+            string += ESCAPE_MAP[peek]
+          else
+            string += peek
+          end
           advance
           advance
         else
+          string += current
           advance
         end
       end
 
-      # @pos indicates closing quotation
-      string = @json[start...@pos].gsub('\"', '"')
-      advance
       string
     end
   end
