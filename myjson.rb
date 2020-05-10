@@ -167,6 +167,8 @@ class MyJSON
         true
       when "false"
         false
+      when "null"
+        nil
       else
         raise UnknownKeyword, "`#{token.string}`"
       end
