@@ -7,6 +7,15 @@ class MyJSON
     Parser.new(tokens).parse
   end
 
+  class Token
+    attr_reader :type, :string
+
+    def initialize(type, string)
+      @type = type
+      @string = string
+    end
+  end
+
   class Lexer
     WHITESPACES = [" ", "\n", "\r", "\t"].freeze
     DIGITS = ("0".."9").to_a.freeze
@@ -25,7 +34,7 @@ class MyJSON
         when skip_whitespace
           next
         when digit?(current)
-          tokens << read_number
+          tokens << Token.new(:number,  read_number)
           next
         else
           raise UnexpectedCharacter
@@ -100,8 +109,17 @@ class MyJSON
       @tokens[@pos]
     end
 
+    def expect_type(type)
+      if current.type == type
+        current
+      else
+        raise UnexpectedToken, "expected #{type} but got #{current.type}"
+      end
+    end
+
     def number
-      Integer(current)
+      token = expect_type(:number)
+      Integer(token.string)
     end
   end
 end
