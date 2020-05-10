@@ -2,7 +2,6 @@ class MyJSON
   Error = Class.new(StandardError)
   UnexpectedCharacter = Class.new(Error)
   UnexpectedToken = Class.new(Error)
-  UnknownKeyword = Class.new(Error)
   NoValue = Class.new(Error)
 
   def self.parse(json)
@@ -162,6 +161,12 @@ class MyJSON
   end
 
   class Parser
+    KEYWORD_MAP = {
+      "true"  => true,
+      "false" => false,
+      "null"  => nil,
+    }.freeze
+
     def initialize(tokens)
       @tokens = tokens
     end
@@ -298,18 +303,11 @@ class MyJSON
     def keyword
       return nil, false unless token = consume_type(:keyword)
 
-      v = case token.string
-      when "true"
-        true
-      when "false"
-        false
-      when "null"
-        nil
+      if KEYWORD_MAP.key?(token.string)
+        return KEYWORD_MAP[token.string], true
       else
-        raise UnknownKeyword, "`#{token.string}`"
+        raise UnexpectedToken, "expected one of (#{KEYWORD_MAP.join(", ")}) but got #{token.string}"
       end
-
-      return v, true
     end
   end
 end
