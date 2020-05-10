@@ -187,16 +187,6 @@ class MyJSON
       @tokens[@pos]
     end
 
-    def expect_type(type)
-      if current.type == type
-        token = current
-        advance
-        token
-      else
-        raise UnexpectedToken, "expected #{type} but got #{current.type}"
-      end
-    end
-
     def expect_symbol(symbol)
       if current.type == :symbol && current.string == symbol
         token = current
