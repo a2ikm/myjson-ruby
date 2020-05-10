@@ -14,7 +14,7 @@ def test(json)
   expected = JSON.parse(json)
   actual = MyJSON.parse(json)
   if expected != actual
-    c = caller(2).first
+    c = caller(1).first
     abort "#{c}: expected #{expected.inspect} but got #{actual.inspect}"
   end
 rescue MyJSON::Error => e
