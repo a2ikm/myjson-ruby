@@ -169,7 +169,7 @@ class MyJSON
     def parse
       @pos = 0
 
-      value
+      value!
     end
 
     private
@@ -220,21 +220,27 @@ class MyJSON
 
     def value
       v, ok = object
-      return v if ok
+      return v, ok if ok
 
       v, ok = array
-      return v if ok
+      return v, ok if ok
 
       v, ok = number
-      return v if ok
+      return v, ok if ok
 
       v, ok = string
-      return v if ok
+      return v, ok if ok
 
       v, ok = keyword
-      return v if ok
+      return v, ok if ok
 
-      raise NoValue
+      return nil, false
+    end
+
+    def value!
+      v, ok = value
+      raise NoValue unless ok
+      v
     end
 
     def object
@@ -259,7 +265,7 @@ class MyJSON
       raise UnexpectedToken, "expected string but got #{current.inspect}" unless ok
 
       expect_symbol(":")
-      v = value
+      v = value!
 
       return k, v
     end
@@ -269,9 +275,9 @@ class MyJSON
 
       a = []
       unless consume_symbol("]")
-        a << value
+        a << value!
         while consume_symbol(",")
-          a << value
+          a << value!
         end
         expect_symbol("]")
       end
