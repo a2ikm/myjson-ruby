@@ -24,6 +24,12 @@ end
 
 test '1'
 test '12'
+test '1.2'
+test '12e3'
+test '12E3'
+test '12.4e+3'
+test '12.4e-3'
+test '12.4e3'
 test ' 1'
 test '1 '
 test ' 1 '
