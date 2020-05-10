@@ -165,6 +165,8 @@ class MyJSON
       case token.string
       when "true"
         true
+      when "false"
+        false
       else
         raise UnknownKeyword, "`#{token.string}`"
       end
