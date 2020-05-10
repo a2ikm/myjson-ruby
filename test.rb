@@ -6,7 +6,7 @@ def test(expected, source)
   actual = MyJSON.parse(source)
   if expected != actual
     c = caller(2).first
-    abort "#{c}: expected #{expected} but got #{actual}"
+    abort "#{c}: expected #{expected.inspect} but got #{actual.inspect}"
   end
 rescue MyJSON::Error => e
   c = caller(2).first
@@ -24,3 +24,4 @@ test nil, 'null'
 test "a", '"a"'
 test "abc", '"abc"'
 test "", '""'
+test "\"", '"\""'

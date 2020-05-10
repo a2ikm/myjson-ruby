@@ -118,12 +118,19 @@ class MyJSON
       advance
       start = @pos
 
-      until current == '"'
-        advance
+      loop do
+        if current == '"'
+          break
+        elsif current == '\\' && peek == '"'
+          advance
+          advance
+        else
+          advance
+        end
       end
 
       # @pos indicates closing quotation
-      string = @json[start...@pos]
+      string = @json[start...@pos].gsub('\"', '"')
       advance
       string
     end
