@@ -2,6 +2,7 @@ class MyJSON
   Error = Class.new(StandardError)
   UnexpectedCharacter = Class.new(Error)
   UnknownKeyword = Class.new(Error)
+  NoValue = Class.new(Error)
 
   def self.parse(json)
     tokens = Lexer.new(json).lex
@@ -196,11 +197,23 @@ class MyJSON
     end
 
     def value
-      array || number || string || keyword
+      v, ok = array
+      return v if ok
+
+      v, ok = number
+      return v if ok
+
+      v, ok = string
+      return v if ok
+
+      v, ok = keyword
+      return v if ok
+
+      raise NoValue
     end
 
     def array
-      return nil unless token = consume_symbol("[")
+      return nil, false unless token = consume_symbol("[")
 
       array = []
       loop do
@@ -209,22 +222,23 @@ class MyJSON
         end
       end
 
-      array
+      return array, true
     end
 
     def number
-      return nil unless token = consume_type(:number)
-      Integer(token.string)
+      return nil, false unless token = consume_type(:number)
+      return Integer(token.string), true
     end
 
     def string
-      return nil unless token = consume_type(:string)
-      token.string
+      return nil, false unless token = consume_type(:string)
+      return token.string, true
     end
 
     def keyword
-      return nil unless token = consume_type(:keyword)
-      case token.string
+      return nil, false unless token = consume_type(:keyword)
+
+      v = case token.string
       when "true"
         true
       when "false"
@@ -234,6 +248,8 @@ class MyJSON
       else
         raise UnknownKeyword, "`#{token.string}`"
       end
+
+      return v, true
     end
   end
 end
