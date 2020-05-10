@@ -1,6 +1,7 @@
 class MyJSON
   Error = Class.new(StandardError)
   UnexpectedCharacter = Class.new(Error)
+  UnexpectedToken = Class.new(Error)
   UnknownKeyword = Class.new(Error)
   NoValue = Class.new(Error)
 
@@ -16,12 +17,21 @@ class MyJSON
       @type = type
       @string = string
     end
+
+    def inspect
+      "#<%s:%s @type=%s @string=%s>" % [
+        self.class.name,
+        object_id,
+        @type.to_s,
+        @string.inspect,
+      ]
+    end
   end
 
   class Lexer
     WHITESPACES = [" ", "\n", "\r", "\t"].freeze
     DIGITS = ("0".."9").to_a.freeze
-    SYMBOLS = ["[", "]", "{", "}", ","].freeze
+    SYMBOLS = ["[", "]", "{", "}", ",", ":"].freeze
 
     def initialize(json)
       @json = json
@@ -188,7 +198,7 @@ class MyJSON
         advance
         token
       else
-        raise UnexpectedToken, "expected symbol #{symbol} but got #{current}"
+        raise UnexpectedToken, "expected symbol #{symbol} but got #{current.inspect}"
       end
     end
 
@@ -231,10 +241,27 @@ class MyJSON
       return nil, false unless token = consume_symbol("{")
 
       o = {}
-
-      expect_symbol("}")
+      unless consume_symbol("}")
+        k, v = pair
+        o[k] = v
+        while consume_symbol(",")
+          k, v = pair
+          o[k] = v
+        end
+        expect_symbol("}")
+      end
 
       return o, true
+    end
+
+    def pair
+      k, ok = string
+      raise UnexpectedToken, "expected string but got #{current.inspect}" unless ok
+
+      expect_symbol(":")
+      v = value
+
+      return k, v
     end
 
     def array
