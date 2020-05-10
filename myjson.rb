@@ -21,7 +21,7 @@ class MyJSON
   class Lexer
     WHITESPACES = [" ", "\n", "\r", "\t"].freeze
     DIGITS = ("0".."9").to_a.freeze
-    SYMBOLS = ["[", "]"].freeze
+    SYMBOLS = ["[", "]", ","].freeze
 
     def initialize(json)
       @json = json
@@ -182,6 +182,16 @@ class MyJSON
       end
     end
 
+    def expect_symbol(symbol)
+      if current.type == :symbol && current.string == symbol
+        token = current
+        advance
+        token
+      else
+        raise UnexpectedToken, "expected symbol #{symbol} but got #{current}"
+      end
+    end
+
     def consume_type(type)
       if current.type == type
         token = current
@@ -191,7 +201,9 @@ class MyJSON
     end
 
     def consume_symbol(symbol)
-      if (token = consume_type(:symbol)) && token.string == symbol
+      if current.type == :symbol && current.string == symbol
+        token = current
+        advance
         token
       end
     end
@@ -215,14 +227,16 @@ class MyJSON
     def array
       return nil, false unless token = consume_symbol("[")
 
-      array = []
-      loop do
-        if consume_symbol("]")
-          break
+      a = []
+      unless consume_symbol("]")
+        a << value
+        while consume_symbol(",")
+          a << value
         end
+        expect_symbol("]")
       end
 
-      return array, true
+      return a, true
     end
 
     def number
