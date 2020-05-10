@@ -160,6 +160,9 @@ class MyJSON
         elsif current == '\\'
           if ESCAPE_MAP.key?(peek)
             string += ESCAPE_MAP[peek]
+          elsif peek == "u" && m = @json[@pos+2, 4].match(/\A[0-9a-fA-F]{4}\z/)
+            string += Integer("0x#{m[0]}").chr(Encoding::UTF_8)
+            4.times { advance }
           else
             string += peek
           end
