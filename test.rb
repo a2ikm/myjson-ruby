@@ -1,5 +1,12 @@
 #!/usr/bin/env ruby
 
+require "bundler/inline"
+
+gemfile do
+  source "https://rubygems.org"
+  gem "json"
+end
+
 require "json"
 require_relative "myjson"
 
