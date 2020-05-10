@@ -1,6 +1,7 @@
 class MyJSON
   Error = Class.new(StandardError)
   UnexpectedCharacter = Class.new(Error)
+  UnknownKeyword = Class.new(Error)
 
   def self.parse(json)
     tokens = Lexer.new(json).lex
@@ -35,6 +36,9 @@ class MyJSON
           next
         when digit?(current)
           tokens << Token.new(:number,  read_number)
+          next
+        when alphabet?(current)
+          tokens << Token.new(:keyword, read_keyword)
           next
         else
           raise UnexpectedCharacter
@@ -90,6 +94,22 @@ class MyJSON
       advance
       number
     end
+
+    def alphabet?(c)
+      /[a-z]/.match?(c)
+    end
+
+    def read_keyword
+      start = @pos
+
+      while alphabet?(peek)
+        advance
+      end
+
+      keyword = @json[start..@pos]
+      advance
+      keyword
+    end
   end
 
   class Parser
@@ -100,7 +120,7 @@ class MyJSON
     def parse
       @pos = 0
 
-      number
+      value
     end
 
     private
@@ -123,9 +143,31 @@ class MyJSON
       end
     end
 
+    def consume_type(type)
+      if current.type == type
+        token = current
+        advance
+        token
+      end
+    end
+
+    def value
+      number || keyword
+    end
+
     def number
-      token = expect_type(:number)
+      return nil unless token = consume_type(:number)
       Integer(token.string)
+    end
+
+    def keyword
+      return nil unless token = consume_type(:keyword)
+      case token.string
+      when "true"
+        true
+      else
+        raise UnknownKeyword, "`#{token.string}`"
+      end
     end
   end
 end
