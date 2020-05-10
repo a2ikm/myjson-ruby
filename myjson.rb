@@ -105,13 +105,19 @@ class MyJSON
 
     private
 
+    def advance
+      @pos += 1
+    end
+
     def current
       @tokens[@pos]
     end
 
     def expect_type(type)
       if current.type == type
-        current
+        token = current
+        advance
+        token
       else
         raise UnexpectedToken, "expected #{type} but got #{current.type}"
       end
