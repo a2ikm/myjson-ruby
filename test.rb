@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 
+require "json"
 require_relative "myjson"
 
-def test(expected, source)
-  actual = MyJSON.parse(source)
+def test(json)
+  expected = JSON.parse(json)
+  actual = MyJSON.parse(json)
   if expected != actual
     c = caller(2).first
     abort "#{c}: expected #{expected.inspect} but got #{actual.inspect}"
@@ -13,24 +15,24 @@ rescue MyJSON::Error => e
   abort "#{c}: #{e.class} #{e.message}"
 end
 
-test 1, '1'
-test 12, '12'
-test 1, ' 1'
-test 1, '1 '
-test 1, ' 1 '
-test true, 'true'
-test false, 'false'
-test nil, 'null'
-test "a", '"a"'
-test "abc", '"abc"'
-test "", '""'
-test "\"", '"\""'
-test [], '[]'
-test [1], '[1]'
-test [1, 2], '[1,2]'
-test [1, 2], '[1, 2]'
-test ["a"], '["a"]'
-test [[1], 2], '[[1], 2]'
-test({}, '{}')
-test({ "a" => 1 }, '{"a":1}')
-test({ "a" => 1, "b" => "2" }, '{"a": 1, "b": "2"}')
+test '1'
+test '12'
+test ' 1'
+test '1 '
+test ' 1 '
+test 'true'
+test 'false'
+test 'null'
+test '"a"'
+test '"abc"'
+test '""'
+test '"\""'
+test '[]'
+test '[1]'
+test '[1,2]'
+test '[1, 2]'
+test '["a"]'
+test '[[1], 2]'
+test '{}'
+test '{"a":1}'
+test '{"a": 1, "b": "2"}'
