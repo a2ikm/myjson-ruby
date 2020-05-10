@@ -34,6 +34,9 @@ class MyJSON
         case
         when skip_whitespace
           next
+        when current == '"'
+          tokens << Token.new(:string, read_string)
+          next
         when digit?(current)
           tokens << Token.new(:number,  read_number)
           next
@@ -110,6 +113,20 @@ class MyJSON
       advance
       keyword
     end
+
+    def read_string
+      advance
+      start = @pos
+
+      until current == '"'
+        advance
+      end
+
+      # @pos indicates closing quotation
+      string = @json[start...@pos]
+      advance
+      string
+    end
   end
 
   class Parser
@@ -152,12 +169,17 @@ class MyJSON
     end
 
     def value
-      number || keyword
+      number || string || keyword
     end
 
     def number
       return nil unless token = consume_type(:number)
       Integer(token.string)
+    end
+
+    def string
+      return nil unless token = consume_type(:string)
+      token.string
     end
 
     def keyword
