@@ -13,11 +13,11 @@ rescue MyJSON::Error => e
   abort "#{c}: #{e.class} #{e.message}"
 end
 
-test 1, "1"
-test 12, "12"
-test 1, " 1"
-test 1, "1 "
-test 1, " 1 "
-test true, "true"
-test false, "false"
-test nil, "null"
+test 1, '1'
+test 12, '12'
+test 1, ' 1'
+test 1, '1 '
+test 1, ' 1 '
+test true, 'true'
+test false, 'false'
+test nil, 'null'
