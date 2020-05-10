@@ -21,7 +21,7 @@ class MyJSON
   class Lexer
     WHITESPACES = [" ", "\n", "\r", "\t"].freeze
     DIGITS = ("0".."9").to_a.freeze
-    SYMBOLS = ["[", "]", ","].freeze
+    SYMBOLS = ["[", "]", "{", "}", ","].freeze
 
     def initialize(json)
       @json = json
@@ -209,6 +209,9 @@ class MyJSON
     end
 
     def value
+      v, ok = object
+      return v if ok
+
       v, ok = array
       return v if ok
 
@@ -222,6 +225,16 @@ class MyJSON
       return v if ok
 
       raise NoValue
+    end
+
+    def object
+      return nil, false unless token = consume_symbol("{")
+
+      o = {}
+
+      expect_symbol("}")
+
+      return o, true
     end
 
     def array
