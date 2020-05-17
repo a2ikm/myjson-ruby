@@ -30,7 +30,7 @@ class MyJSON
   class Lexer
     WHITESPACES = [" ", "\n", "\r", "\t"].freeze
     DIGITS = ("0".."9").to_a.freeze
-    SYMBOLS = ["[", "]", "{", "}", ",", ":", "-", "+", ".", "e", "E"].freeze
+    SYMBOLS = ["[", "]", "{", "}", ",", ":"].freeze
     ESCAPE_MAP = {
       '"'   => '"',
       '\\'  => '\\',
@@ -61,7 +61,7 @@ class MyJSON
         when current == '"'
           tokens << Token.new(:string, read_string)
           next
-        when digit?(current)
+        when current == '-' || current == '+' || digit?(current)
           tokens << Token.new(:number,  read_number)
           next
         when alphabet?(current)
@@ -121,15 +121,49 @@ class MyJSON
     end
 
     def read_number
+      n = String.new
+
+      n += read_sign
+      n += read_digits
+
+      if current == '.'
+        n += current
+        advance
+
+        n += read_digits
+      end
+
+      if current == 'e' || current == 'E'
+        n += current
+        advance
+
+        n += read_sign
+        n += read_digits
+      end
+
+      n
+    end
+
+    def read_sign
+      if current == '-' || current == '+'
+        sign = current
+        advance
+        sign
+      else
+        ''
+      end
+    end
+
+    def read_digits
       start = @pos
 
       while digit?(peek)
         advance
       end
 
-      number = @json[start..@pos]
+      digits = @json[start..@pos]
       advance
-      number
+      digits
     end
 
     def alphabet?(c)
@@ -309,37 +343,8 @@ class MyJSON
     end
 
     def number
-      s = String.new
-
-      if minus = consume_symbol("-")
-        integer = expect_type(:number)
-        s += minus.string
-        s += integer.string
-      elsif integer = consume_type(:number)
-        s += integer.string
-      else
-        return nil, false
-      end
-
-      if dot = consume_symbol(".")
-        fraction = expect_type(:number)
-        s += dot.string
-        s += fraction.string
-      end
-
-      if e = consume_symbol("e") || consume_symbol("E")
-        s += e.string
-        if plus = consume_symbol("+")
-          s += plus.string
-        elsif minus = consume_symbol("-")
-          s += minus.string
-        end
-
-        e = expect_type(:number)
-        s += e.string
-      end
-
-      return eval(s), true
+      return nil, false unless token = consume_type(:number)
+      return eval(token.string), true
     end
 
     def string
